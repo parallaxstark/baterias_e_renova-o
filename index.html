@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz: Descarte de Pilhas</title>
+<style>
+:root{--bg:#46178f;--bg2:#6a2fc7;--card:#fff;--ink:#22143c;--soft:#f1ebfb;--blue:#1368ce;--red:#e21b3c;--green:#26890c;--gold:#ffa602;--txt:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a0e57;--bg2:#40198a;--card:#3a1d70;--ink:#f4efff;--soft:#4b2a8a}}
+:root[data-theme="dark"]{--bg:#2a0e57;--bg2:#40198a;--card:#3a1d70;--ink:#f4efff;--soft:#4b2a8a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--txt);font-family:"Montserrat","Trebuchet MS",system-ui,sans-serif;font-weight:700}
+.screen{display:none;max-width:760px;margin:0 auto;padding:20px 16px 32px;min-height:100vh;flex-direction:column;gap:16px}
+.screen.on{display:flex}
+h1{font-size:clamp(2rem,8vw,3.2rem);margin:0;text-align:center;letter-spacing:-1px;text-shadow:0 4px 0 rgba(0,0,0,.25)}
+.sub{text-align:center;opacity:.85;font-weight:600;margin:0}
+.card{background:var(--card);color:var(--ink);border-radius:14px;padding:18px;box-shadow:0 5px 0 rgba(0,0,0,.25)}
+input,select,textarea{width:100%;font:inherit;font-size:1.05rem;padding:14px;border-radius:8px;border:3px solid transparent;background:var(--soft);color:var(--ink);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+textarea{resize:vertical;min-height:70px}
+.btn{font:inherit;font-size:1.15rem;border:0;border-radius:8px;padding:14px 22px;cursor:pointer;color:#fff;background:#333;box-shadow:0 5px 0 rgba(0,0,0,.3);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.btn.go{background:var(--green)}.btn.alt{background:rgba(255,255,255,.18)}.btn.dl{background:var(--red)}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}
+.pin{display:flex;flex-direction:column;gap:12px;margin-top:auto;margin-bottom:auto}
+.logo{font-size:4rem;text-align:center}
+/* jogo */
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pill{background:rgba(0,0,0,.28);border-radius:999px;padding:8px 16px;font-size:.95rem}
+.qbox{background:var(--card);color:var(--ink);border-radius:14px;padding:26px 18px;text-align:center;font-size:clamp(1.3rem,5vw,2rem);box-shadow:0 5px 0 rgba(0,0,0,.25);min-height:160px;display:flex;align-items:center;justify-content:center}
+.bar{height:14px;border-radius:99px;background:rgba(0,0,0,.3);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--gold);transition:width .1s linear}
+.ans{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-height:200px}
+.a{font:inherit;color:#fff;border:0;border-radius:10px;font-size:clamp(1.3rem,5vw,2rem);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.3);min-height:150px}
+.a:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.a .ic{font-size:2.6rem;line-height:1}
+.a.v{background:var(--blue)}.a.f{background:var(--red)}
+/* feedback */
+.fb{align-items:center;justify-content:center;text-align:center;gap:14px}
+.fb.ok{background:var(--green)}.fb.no{background:var(--red)}
+.big{font-size:5rem;line-height:1}
+.pts{font-size:2rem}
+.fbwrap{position:fixed;inset:0;display:none;z-index:5}
+.fbwrap.on{display:block}
+.fbwrap.ok{background:var(--green)}.fbwrap.no{background:var(--red)}
+.fbwrap .screen{display:flex;justify-content:center;align-items:center;text-align:center}
+/* final */
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center}
+.stats div{background:var(--card);color:var(--ink);border-radius:12px;padding:14px 6px;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.stats b{display:block;font-size:1.6rem}
+.stats small{font-weight:600;opacity:.7}
+/* editor */
+.qi{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(128,128,128,.25)}
+.qi:last-child{border:0}
+.qi span{flex:1;font-weight:600}
+.tag{font-size:.8rem;padding:4px 10px;border-radius:99px;color:#fff}
+.tag.v{background:var(--blue)}.tag.f{background:var(--red)}
+.x{background:none;border:0;color:var(--red);font-size:1.4rem;cursor:pointer}
+.seg{display:flex;gap:10px}
+.seg label{flex:1;text-align:center;padding:12px;border-radius:8px;cursor:pointer;background:var(--soft);border:3px solid transparent}
+.seg input{display:none}
+.seg input:checked+span{color:#fff}
+.seg label:has(input:checked){color:#fff}
+.seg .sv:has(input:checked){background:var(--blue)}.seg .sf:has(input:checked){background:var(--red)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- INÍCIO -->
+<section class="screen on" id="home">
+  <div class="pin">
+    <div class="logo">🔋</div>
+    <h1>Pilhas e Meio Ambiente</h1>
+    <p class="sub">Verdadeiro ou falso sobre descarte de pilhas e contaminação. Quanto mais rápido, mais pontos!</p>
+    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <input id="nick" maxlength="16" placeholder="Seu apelido" autocomplete="off">
+      <select id="tempo" aria-label="Tempo por pergunta">
+        <option value="10">⏱ 10 segundos por pergunta</option>
+        <option value="20" selected>⏱ 20 segundos por pergunta</option>
+        <option value="30">⏱ 30 segundos por pergunta</option>
+      </select>
+      <button class="btn go" id="play">Jogar</button>
+    </div>
+    <button class="btn alt" id="edit">✏️ Criar / editar perguntas</button>
+  </div>
+</section>
+
+<!-- JOGO -->
+<section class="screen" id="game">
+  <div class="top"><span class="pill" id="cnt">1/8</span><span class="pill" id="tm">20</span><span class="pill" id="sc">0 pts</span></div>
+  <div class="bar"><i id="barfill"></i></div>
+  <div class="qbox" id="qtxt"></div>
+  <div class="ans">
+    <button class="a v" id="bv"><span class="ic">◆</span>Verdadeiro</button>
+    <button class="a f" id="bf"><span class="ic">▲</span>Falso</button>
+  </div>
+</section>
+
+<!-- FEEDBACK -->
+<div class="fbwrap" id="fb">
+  <section class="screen">
+    <div class="big" id="fbi"></div>
+    <h1 id="fbt"></h1>
+    <div class="pts" id="fbp"></div>
+    <p class="sub" id="fbs"></p>
+    <button class="btn alt" id="next" style="min-width:200px">Próxima ▶</button>
+  </section>
+</div>
+
+<!-- FINAL -->
+<section class="screen" id="end">
+  <div class="pin">
+    <div class="logo" id="medal">🏆</div>
+    <h1 id="endt"></h1>
+    <p class="sub" id="endn"></p>
+    <div class="stats">
+      <div><b id="eS">0</b><small>pontos</small></div>
+      <div><b id="eC">0</b><small>acertos</small></div>
+      <div><b id="eP">0%</b><small>precisão</small></div>
+    </div>
+    <div class="row">
+      <button class="btn go" id="again">Jogar de novo</button>
+      <button class="btn alt" id="gohome">Início</button>
+    </div>
+  </div>
+</section>
+
+<!-- EDITOR -->
+<section class="screen" id="editor">
+  <div class="top"><button class="btn alt" id="back">◀ Voltar</button><span class="pill" id="qn"></span></div>
+  <div class="card" style="display:flex;flex-direction:column;gap:12px">
+    <textarea id="nq" placeholder="Escreva uma afirmação…" maxlength="200"></textarea>
+    <div class="seg">
+      <label class="sv"><input type="radio" name="ra" value="1" checked><span>◆ Verdadeiro</span></label>
+      <label class="sf"><input type="radio" name="ra" value="0"><span>▲ Falso</span></label>
+    </div>
+    <button class="btn go" id="add">Adicionar pergunta</button>
+  </div>
+  <div class="card" id="list"></div>
+  <div class="row">
+    <button class="btn alt" id="reset">Restaurar exemplos</button>
+    <button class="btn dl" id="clear">Apagar todas</button>
+  </div>
+</section>
+
+<script>
+const DEF=[
+{q:"Pilhas usadas podem ser jogadas no lixo comum.",a:false,e:"Devem ser levadas a pontos de coleta, pois contêm substâncias tóxicas."},
+{q:"Pilhas e baterias podem conter metais pesados, como chumbo, cádmio e mercúrio.",a:true,e:"Esses metais são tóxicos e não se degradam facilmente no ambiente."},
+{q:"Pilhas descartadas em lixões podem contaminar o solo e a água subterrânea.",a:true,e:"Com o tempo, a carcaça se corrói e os metais vazam e se infiltram no solo."},
+{q:"Os metais pesados das pilhas podem se acumular nos seres vivos ao longo da cadeia alimentar.",a:true,e:"É a bioacumulação: o contaminante se concentra a cada nível da cadeia."},
+{q:"Queimar pilhas é uma forma segura de eliminá-las.",a:false,e:"A queima libera gases e partículas tóxicas no ar."},
+{q:"No Brasil, lojas que vendem pilhas devem aceitar de volta as usadas.",a:true,e:"É a logística reversa, prevista na legislação brasileira de resíduos."},
+{q:"Pilhas recarregáveis nunca precisam de descarte correto.",a:false,e:"Duram mais, mas também chegam ao fim da vida útil e devem ir a pontos de coleta."},
+{q:"Os materiais de pilhas e baterias usadas podem ser reciclados e reaproveitados.",a:true,e:"Metais recuperados voltam à cadeia produtiva, reduzindo a extração de recursos."},
+{q:"É seguro abrir uma pilha para reaproveitar o que tem dentro.",a:false,e:"O conteúdo é corrosivo e tóxico, e abrir a pilha oferece risco à saúde."},
+{q:"A exposição a metais pesados, como chumbo e mercúrio, pode causar problemas neurológicos e renais.",a:true,e:"Esses metais afetam sobretudo o sistema nervoso e os rins."}
+];
+const $=id=>document.getElementById(id);
+let Q=load(),list=[],idx=0,score=0,streak=0,hits=0,TIME=20,t0=0,timer=null,locked=true;
+
+function load(){try{const s=localStorage.getItem("vf-pilhas");if(s){const a=JSON.parse(s);if(Array.isArray(a))return a}}catch(e){}return DEF.map(x=>({...x}))}
+function save(){try{localStorage.setItem("vf-pilhas",JSON.stringify(Q))}catch(e){}}
+function show(id){document.querySelectorAll("body>.screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+/* jogo */
+function start(){
+  if(!Q.length){alert("Adicione pelo menos uma pergunta no editor.");return}
+  TIME=+$("tempo").value;list=shuffle(Q);idx=0;score=0;streak=0;hits=0;
+  try{localStorage.setItem("vf-nick",$("nick").value)}catch(e){}
+  nextQ();
+}
+function nextQ(){
+  $("fb").classList.remove("on","ok","no");
+  if(idx>=list.length)return finish();
+  show("game");locked=false;
+  $("cnt").textContent=(idx+1)+"/"+list.length;
+  $("sc").textContent=score+" pts";
+  $("qtxt").textContent=list[idx].q;
+  $("tm").textContent=TIME;$("barfill").style.width="100%";
+  t0=Date.now();clearInterval(timer);
+  timer=setInterval(()=>{
+    const el=(Date.now()-t0)/1000,left=Math.max(0,TIME-el);
+    $("tm").textContent=Math.ceil(left);
+    $("barfill").style.width=(left/TIME*100)+"%";
+    if(left<=0)answer(null);
+  },100);
+}
+function answer(v){
+  if(locked)return;locked=true;clearInterval(timer);
+  const el=Math.min(TIME,(Date.now()-t0)/1000),q=list[idx];
+  const ok=v!==null&&v===q.a;let pts=0,bonus=0;
+  if(ok){streak++;hits++;pts=Math.round(1000*(1-(el/TIME)/2));bonus=Math.min(streak-1,5)*100;score+=pts+bonus}else streak=0;
+  const w=$("fb");w.classList.add("on",ok?"ok":"no");
+  $("fbi").textContent=ok?"✔":"✖";
+  $("fbt").textContent=v===null?"Tempo esgotado!":ok?"Correto!":"Errado!";
+  $("fbp").textContent=ok?"+"+(pts+bonus)+" pontos":"+0 pontos";
+  $("fbs").textContent=(q.e?q.e+" ":"")+(ok&&streak>1?"🔥 Sequência de "+streak+" acertos! ":"")+(ok?"":"A resposta era "+(q.a?"Verdadeiro":"Falso")+". ")+"Total: "+score;
+  $("next").textContent=idx+1>=list.length?"Ver resultado ▶":"Próxima ▶";
+}
+function finish(){
+  show("end");
+  const n=$("nick").value.trim()||"Jogador",p=Math.round(hits/list.length*100);
+  $("endt").textContent=p>=80?"Incrível, "+n+"!":p>=50?"Muito bem, "+n+"!":"Boa tentativa, "+n+"!";
+  $("medal").textContent=p>=80?"🏆":p>=50?"🥈":"🎯";
+  $("endn").textContent="Você acertou "+hits+" de "+list.length+" perguntas.";
+  $("eS").textContent=score;$("eC").textContent=hits;$("eP").textContent=p+"%";
+}
+
+/* editor */
+function render(){
+  $("qn").textContent=Q.length+" pergunta"+(Q.length===1?"":"s");
+  $("list").innerHTML=Q.length?Q.map((x,i)=>'<div class="qi"><span class="tag '+(x.a?"v":"f")+'">'+(x.a?"V":"F")+'</span><span>'+esc(x.q)+'</span><button class="x" data-i="'+i+'" aria-label="Remover">🗑</button></div>').join(""):"<p style='margin:0'>Nenhuma pergunta ainda.</p>";
+}
+
+/* eventos */
+$("play").onclick=start;
+$("again").onclick=start;
+$("gohome").onclick=()=>show("home");
+$("next").onclick=()=>{idx++;nextQ()};
+$("bv").onclick=()=>answer(true);
+$("bf").onclick=()=>answer(false);
+$("edit").onclick=()=>{render();show("editor")};
+$("back").onclick=()=>show("home");
+$("add").onclick=()=>{
+  const t=$("nq").value.trim();if(!t){$("nq").focus();return}
+  Q.push({q:t,a:document.querySelector('input[name=ra]:checked').value==="1"});
+  save();$("nq").value="";render();
+};
+$("list").onclick=e=>{const b=e.target.closest(".x");if(!b)return;Q.splice(+b.dataset.i,1);save();render()};
+$("reset").onclick=()=>{Q=DEF.map(x=>({...x}));save();render()};
+$("clear").onclick=()=>{if(confirm("Apagar todas as perguntas?")){Q=[];save();render()}};
+document.addEventListener("keydown",e=>{
+  if(!$("game").classList.contains("on"))return;
+  if(e.key==="v"||e.key==="V"||e.key==="ArrowLeft")answer(true);
+  if(e.key==="f"||e.key==="F"||e.key==="ArrowRight")answer(false);
+});
+try{$("nick").value=localStorage.getItem("vf-nick")||""}catch(e){}
+</script>
+</body>
+</html>
